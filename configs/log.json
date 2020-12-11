@@ -1,0 +1,16 @@
+{
+  "sample1": {
+    "host": "0.0.0.0",
+    "port": 5700,
+    "use_ipv6": false,
+    "file": "sample1.log",
+    "level": 0
+  },
+  "sample2": {
+    "host": "0.0.0.0",
+    "port": 5701,
+    "use_ipv6": false,
+    "file": "sample2.log",
+    "level": 0
+  }
+}
