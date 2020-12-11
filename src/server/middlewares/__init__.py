@@ -11,6 +11,8 @@ from .force_headers import force_headers
 from .api_key_checker import api_key_checker
 from .dos_detection import dos_detection
 from .referer_checker import referer_checker
+from .add_time_header import add_time_header
+from .save_start_time import save_start_time
 
 # -------------------------------------------------------------------------- Imports --
 
@@ -25,11 +27,13 @@ plugin: str = 'plugin'
 # -- Default Middlewares --------------------------------------------------------------------------
 
 middlewares: Dict[str, Tuple[str, Union[Callable, SanicPlugin]]] = {
+    'save_start_time': (request, save_start_time),
     'maintenance_flag': (request, maintenance_flag),
     'force_headers': (request, force_headers),
     'referer_checker': (request, referer_checker),
     'api_key_checker': (request, api_key_checker),
     'dos_detection': (request, dos_detection),
+    'add_time_header': (response, add_time_header),
 }
 
 
