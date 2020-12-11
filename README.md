@@ -92,6 +92,12 @@ If you want to write log messages to sample2.log,  you need to use port 5701.
         - root_pass (string | max-length: 1024 | required) the root password of MocaFileLog.
 
 
+- `http://<your-ip>:<your-port>/status`
+    - This URI can checking the server status.
+    - parameter
+        - don't need any parameters, don't need api-key.
+    
+
 ### Console Usage
 - `python3 moca.py version`
     - Show the version of this system.
