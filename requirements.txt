@@ -55,4 +55,5 @@ tweepy
 janome
 Pillow
 limits
-js2py
+gspread
+oauth2client

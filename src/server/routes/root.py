@@ -44,6 +44,7 @@ async def save_log(request: Request) -> HTTPResponse:
     )
     if msg is None:
         raise Forbidden('message parameter format error.')
+    request.app.log_list.append((level, mzk.get_time_string(), msg))
     request.app.moca_log.write_log(msg, level)
     return text('success.')
 
@@ -60,6 +61,7 @@ async def save_logs(request: Request) -> HTTPResponse:
         try:
             level, msg = log['level'], log.get('message', log['msg'])
             if level in [0, 1, 2, 3, 4] and isinstance(msg, str) and len(msg) <= 8192:
+                request.app.log_list.append((level, mzk.get_time_string(), msg))
                 request.app.moca_log.write_log(msg, level)
             else:
                 raise Forbidden('logs parameter format error.')

@@ -128,6 +128,7 @@ If you want to write log messages to sample2.log,  you need to use port 5701.
 ```
 {
   "sample1": {
+    "status": true,
     "host": "0.0.0.0",
     "port": 5700,
     "use_ipv6": false,
@@ -135,6 +136,7 @@ If you want to write log messages to sample2.log,  you need to use port 5701.
     "level": 0
   },
   "the name of log": {
+    "status": true of false, If this value is false, this config will be ignored.
     "host": "the host address of this server.",
     "port": the port of this server,
     "use_ipv6": true or false,

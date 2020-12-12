@@ -2,7 +2,8 @@
 
 from sanic import Sanic, Blueprint
 from threading import Thread
-from multiprocessing import Queue
+from gspread import authorize
+from oauth2client.service_account import ServiceAccountCredentials
 from limits.strategies import FixedWindowElasticExpiryRateLimiter
 from limits.storage import MemoryStorage, RedisStorage
 from copy import copy
@@ -113,11 +114,23 @@ async def before_server_start(app_: Sanic, loop):
     app_.moca_log = mzk.MocaFileLog(file, app_._log_level)
     app_.secure_log = mzk.MocaFileLog(core.LOG_DIR.joinpath('secure.log'))
     app_.scheduler = mzk.MocaScheduler()
+    app_.log_list = []
     if core.SERVER_CONFIG['rate_limiter_redis_storage'] is None:
         app_._storage_for_rate_limiter = MemoryStorage()
     else:
         app_._storage_for_rate_limiter = RedisStorage(core.SERVER_CONFIG['rate_limiter_redis_storage'])
     app_.rate_limiter = FixedWindowElasticExpiryRateLimiter(app_._storage_for_rate_limiter)
+
+    if core.LOG_CONFIG[app_._log_name].get('google_spread_sheets_auth', None) is not None:
+        scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+        app_._credentials = ServiceAccountCredentials.from_json_keyfile_name(
+            str(core.CONFIG_DIR.joinpath(core.LOG_CONFIG[app_._log_name].get('google_spread_sheets_auth'))),
+            scope,
+        )
+        app_._gc = authorize(app_._credentials)
+        app_.workbook = app_._gc.open_by_key(core.LOG_CONFIG[app_._log_name].get('spread_sheets_key'))
+    else:
+        app_.workbook = None
 
     def __reload_timer(application: Sanic) -> None:
         while True:
@@ -147,7 +160,46 @@ async def after_server_start(app_: Sanic, loop):
                     mzk.LogLevel.WARNING
                 )
 
+    def sync_with_spread_sheets():
+        if len(app_.log_list) == 0:
+            return None
+        if app_.workbook is not None:
+            workbook = app_.workbook
+            if len(workbook.worksheets()) == 1 and not workbook.worksheets()[0].title.startswith('1-'):
+                workbook.add_worksheet(title='1-0', rows=5001, cols=3)
+                workbook.del_worksheet(workbook.worksheets()[0])
+                a1, b1, c1 = workbook.worksheets()[0].range('A1:C1')
+                a1.value, b1.value, c1.value = 'Level', 'Timestamp', 'Message'
+                workbook.worksheets()[0].update_cells([a1, b1, c1])
+            else:
+                latest = workbook.worksheets()[-1]
+                start, end = int(latest.title.split('-')[0]), int(latest.title.split('-')[1])
+                index = end - start + 3
+                if index == 5002:
+                    workbook.add_worksheet(title=f'{end+1}-{end}', rows=5001, cols=3)
+                    a1, b1, c1 = workbook.worksheets()[-1].range('A1:C1')
+                    a1.value, b1.value, c1.value = 'Level', 'Timestamp', 'Message'
+                    workbook.worksheets()[-1].update_cells([a1, b1, c1])
+                    latest = workbook.worksheets()[-1]
+                    start, end = int(latest.title.split('-')[0]), int(latest.title.split('-')[1])
+                    index = end - start + 3
+                if (index + len(app_.log_list)) <= 5002:
+                    log_list = app_.log_list
+                    app_.log_list = []
+                else:
+                    log_list = app_.log_list[:5002-index]
+                    app_.log_list[:5002 - index] = []
+                cell_list = latest.range(f'A{index}:C{index + len(log_list)-1}')
+                i = 0
+                for level, timestamp, message in log_list:
+                    cell_list[i].value, cell_list[i+1].value, cell_list[i+2].value = level, timestamp, message
+                    i += 3
+                latest.update_cells(cell_list)
+                index += len(log_list)
+                latest.update_title(f'{start}-{index + start - 3}')
+
     app_.scheduler.add_event_per_second('Dos-detect', dos_detect, 5)
+    app_.scheduler.add_event_per_second('Sync-With-Spread-Sheets', sync_with_spread_sheets, 5)
 
 
 async def before_server_stop(app_: Sanic, loop):
