@@ -112,7 +112,7 @@ def start(sleep: float = 0) -> None:
     """Run MocaFileLog in background."""
     mzk.sleep(sleep)
     for name in core.LOG_CONFIG:
-        if core.CONFIG_DIR[name].get('status', True):
+        if core.LOG_CONFIG[name].get('status', True):
             mzk.call(
                 f'nohup {mzk.executable} {core.TOP_DIR.joinpath("moca.py")} __run {name} &> /dev/null &',
                 shell=True
