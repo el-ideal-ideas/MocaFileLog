@@ -94,7 +94,7 @@ def run_app(name: str, host: str, port: int, use_ipv6: bool, file: str, level: i
 
 # set event listener
 async def before_server_start(app_: Sanic, loop):
-    mzk.set_process_name(f'MocaFileLog --- {app_._log_name}')
+    mzk.set_process_name(f'MocaFileLog({core.VERSION}) --- {app_._log_name}')
     mzk.print_info(f'Starting Sanic server. -- {mzk.get_my_pid()}')
 
     app_.system_config: mzk.MocaConfig = mzk.MocaConfig(
