@@ -24,7 +24,7 @@ from spf import SanicPluginsFramework, SanicPlugin
 from ..moca_core import LICENSE, IS_DEBUG, CPU_COUNT, tz, ENCODING, is_uvloop
 from ..moca_utils import print_warning, print_info, get_random_string, print_error, is_file, set_process_name, is_ujson
 from ..moca_file import load_json_from_file
-from .utils import get_args
+from .utils import get_args, get_remote_address
 
 # -------------------------------------------------------------------------- Imports --
 
@@ -512,6 +512,8 @@ class MocaSanic:
                 pprint(request.method)
                 print('-- ip --')
                 pprint(request.ip)
+                print('-- remote --')
+                pprint(get_remote_address(request))
                 print('-- json --')
                 pprint(json_data)
                 print('-- args --')

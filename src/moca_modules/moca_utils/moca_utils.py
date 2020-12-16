@@ -1360,9 +1360,13 @@ def get_my_public_ip() -> str:
     return get_my_public_ip_v6()
 
 
-def update_use_github(project_dir: Union[Path, str], url: str, keep_list: List[Union[Path, str]] = []) -> None:
+def update_use_github(
+        project_dir: Union[Path, str], url: str, keep_list: List[Union[Path, str]] = [], map_dir: str = ''
+) -> None:
     git_dir = Path(project_dir).joinpath(uuid4().hex)
     git_clone(url, str(git_dir))
+    if map_dir != '':
+        tmp_dir, git_dir = git_dir, git_dir.joinpath(map_dir)
     for keep in keep_list:
         from_ = Path(keep)
         to_ = git_dir
@@ -1399,6 +1403,7 @@ def update_moca_modules() -> None:
             SELF_PATH.joinpath('moca_data'),
             SELF_PATH.joinpath('moca_keep'),
         ],
+        'moca_modules',
     )
 
 # -------------------------------------------------------------------------- Utils --

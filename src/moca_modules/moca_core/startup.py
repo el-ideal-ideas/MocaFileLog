@@ -56,7 +56,10 @@ del __debug_mode
 
 # run at exit
 def exit_func():
-    from . import atexit as _
+    try:
+        from . import atexit as _
+    except (ImportError, ModuleNotFoundError):
+        pass
     
     
 register(exit_func)

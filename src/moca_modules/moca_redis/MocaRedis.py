@@ -63,6 +63,7 @@ class MocaRedis:
         self._maxsize: int = maxsize
         self._ssl: Optional[SSLContext] = ssl
         self._pool = None
+        self.prefix = ''
 
     @property
     def url(self) -> str:
@@ -130,32 +131,32 @@ class MocaRedis:
 
     async def set(self, key: str, value: Any, expiration: int = -1):
         if expiration == -1:
-            await self.execute('SET', 'mr-' + key, dumps(value))
+            await self.execute('SET', f'mr-{self.prefix}-{key}', dumps(value))
         else:
-            await self.execute('SETEX', 'mr-' + key, expiration, dumps(value))
+            await self.execute('SETEX', f'mr-{self.prefix}-{key}', expiration, dumps(value))
 
     async def set_multi(self, data: List[Tuple[str, Any]], expiration: int = -1):
         if expiration == -1:
             tmp: List[Union[str, bytes]] = []
             for value in data:
-                tmp.append('mr-' + value[0])
+                tmp.append(f'mr-{self.prefix}-{value[0]}')
                 tmp.append(dumps(value[1]))
             await self.execute('MSET', *tmp)
         else:
             pool = await self.get_aio_pool()
             async with pool.get() as redis:
                 for value in data:
-                    await redis.execute('SETEX', 'mr-' + value[0], expiration, dumps(value[1]))
+                    await redis.execute('SETEX', f'mr-{self.prefix}-{value[0]}', expiration, dumps(value[1]))
 
     async def get(self, key: str, default: Any = None) -> Any:
-        data = await self.execute('GET', 'mr-' + key)
+        data = await self.execute('GET', f'mr-{self.prefix}-{key}')
         if data is None:
             return default
         else:
             return loads(data)
 
     async def get_multi(self, keys: List[str]) -> Dict:
-        data_list = await self.execute('MGET', *['mr-' + value for value in keys])
+        data_list = await self.execute('MGET', *[f'mr-{self.prefix}-{value}' for value in keys])
         result: Dict = {}
         index = 0
         for data in data_list:
@@ -167,35 +168,35 @@ class MocaRedis:
         return result
 
     async def rpush(self, key: str, value: Any):
-        await self.execute('RPUSH', 'mr-' + key, dumps(value))
+        await self.execute('RPUSH', f'mr-{self.prefix}-{key}', dumps(value))
 
     async def lpush(self, key: str, value: Any):
-        await self.execute('LPUSH', 'mr-' + key, dumps(value))
+        await self.execute('LPUSH', f'mr-{self.prefix}-{key}', dumps(value))
 
     async def rpop(self, key: str) -> Any:
-        return loads(await self.execute('RPOP', 'mr-' + key))
+        return loads(await self.execute('RPOP', f'mr-{self.prefix}-{key}'))
 
     async def lpop(self, key: str) -> Any:
-        return loads(await self.execute('LPOP', 'mr-' + key))
+        return loads(await self.execute('LPOP', f'mr-{self.prefix}-{key}'))
 
     async def lrange(self, key: str, start: int, end: int) -> Any:
-        data = await self.execute('LRANGE', 'mr-' + key, start, end)
+        data = await self.execute('LRANGE', f'mr-{self.prefix}-{key}', start, end)
         return [loads(item) for item in data]
 
     async def lindex(self, key: str, index: int) -> Any:
-        return loads(await self.execute('LINDEX', 'mr-' + key, index))
+        return loads(await self.execute('LINDEX', f'mr-{self.prefix}-{key}', index))
 
     async def llen(self, key: str) -> int:
-        return await self.execute('LLEN', 'mr-' + key)
+        return await self.execute('LLEN', f'mr-{self.prefix}-{key}')
 
     async def ltrim(self, key: str, start: int, end: int) -> None:
-        await self.execute('LTRIM', 'mr-' + key, start, end)
+        await self.execute('LTRIM', f'mr-{self.prefix}-{key}', start, end)
 
     async def delete(self, key: str):
-        await self.execute('DEL', 'mr-' + key)
+        await self.execute('DEL', f'mr-{self.prefix}-{key}')
 
     async def delete_multi(self, keys: List[str]):
-        await self.execute('DEL', *['mr-' + value for value in keys])
+        await self.execute('DEL', *[f'mr-{self.prefix}-{value}' for value in keys])
 
     async def flush_db(self):
         await self.execute('FLUSHDB', 'ASYNC')
@@ -213,16 +214,16 @@ class MocaRedis:
         await self.execute('BGSAVE')
 
     async def increment(self, key: str):
-        return await self.execute('INCR', 'mr-' + key)
+        return await self.execute('INCR', f'mr-{self.prefix}-{key}')
 
     async def increment_by(self, key: str, value: int):
-        return await self.execute('INCRBY', 'mr-' + key, value)
+        return await self.execute('INCRBY', f'mr-{self.prefix}-{key}', value)
 
     async def decrement(self, key: str):
-        return await self.execute('DECR', 'mr-' + key)
+        return await self.execute('DECR', f'mr-{self.prefix}-{key}')
 
     async def decrement_by(self, key: str, value: int):
-        return await self.execute('DECRBY', 'mr-' + key, value)
+        return await self.execute('DECRBY', f'mr-{self.prefix}-{key}', value)
 
     async def test_con(self) -> None:
         key = 'moca_modules_connection_test_key' + get_random_string(32)
