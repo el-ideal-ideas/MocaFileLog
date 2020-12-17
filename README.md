@@ -40,14 +40,14 @@ You can use `URL parameter` or `Form parameter` or `json body`
 If you want to write log messages to sample1.log,  you need to use port 5700.
 If you want to write log messages to sample2.log,  you need to use port 5701.
 
-- `http://<your-ip>:<your-port>/moca-file-log/details`
+- `http://<your-ip>:<your-port>/moca-file-log/<name-of-log>/details`
     - This URI can get details information about the log file.
     - parameters
         - api_key (string | max-length: 1024 | required) your API key.
         - root_pass (string | max-length: 1024 | required) the root password of MocaFileLog.
         
         
-- `http://<your-ip>:<your-port>/moca-file-log/save-log`
+- `http://<your-ip>:<your-port>/moca-file-log/<name-of-log>/save-log`
     - This URI can save log message to the log file.
     - parameters
         - api_key (string | max-length: 1024 | required) your API key.
@@ -56,7 +56,7 @@ If you want to write log messages to sample2.log,  you need to use port 5701.
         - message (string | max-length: 8192 | required) the log message.
     
 
-- `http://<your-ip>:<your-port>/moca-file-log/save-logs`
+- `http://<your-ip>:<your-port>/moca-file-log/<name-of-log>/save-logs`
     - This URI can save log messages to the log file.
     - parameters
         - logs (list of dict | max-length: 1024 | required)
@@ -64,28 +64,28 @@ If you want to write log messages to sample2.log,  you need to use port 5701.
             - [{"level": 0, "message": "log message"}, {"level": 0, "message": "log message"}]
             
 
-- `http://<your-ip>:<your-port>/moca-file-log/download-logs`
+- `http://<your-ip>:<your-port>/moca-file-log/<name-of-log>/download-logs`
     - This URI can download the log file.
     - parameters
         - api_key (string | max-length: 1024 | required) your API key.
         - root_pass (string | max-length: 1024 | required) the root password of MocaFileLog.
     
 
-- `http://<your-ip>:<your-port>/moca-file-log/get-logs`
+- `http://<your-ip>:<your-port>/moca-file-log/<name-of-log>/get-logs`
     - This URI can get all log messages.
     - parameters
         - api_key (string | max-length: 1024 | required) your API key.
         - root_pass (string | max-length: 1024 | required) the root password of MocaFileLog.
     
 
-- `http://<your-ip>:<your-port>/moca-file-log/get-latest-logs`
+- `http://<your-ip>:<your-port>/moca-file-log/<name-of-log>/get-latest-logs`
     - This URI can get latest 1024 log messages.
     - parameters
         - api_key (string | max-length: 1024 | required) your API key.
         - root_pass (string | max-length: 1024 | required) the root password of MocaFileLog.
     
 
-- `http://<your-ip>:<your-port>/moca-file-log/clear-logs`
+- `http://<your-ip>:<your-port>/moca-file-log/<name-of-log>/clear-logs`
     - This URI can remove all logs.
     - parameters
         - api_key (string | max-length: 1024 | required) your API key.
