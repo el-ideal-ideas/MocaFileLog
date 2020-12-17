@@ -80,6 +80,7 @@ app: Sanic = moca_sanic.app
 
 
 def run_app(name: str, host: str, port: int, use_ipv6: bool, file: str, level: int) -> None:
+    moca_sanic.app.blueprint(Blueprint.group(*blueprints, url_prefix=f'/moca-file-log/{name}'))
     moca_sanic._host = host
     moca_sanic._port = port
     moca_sanic._use_ipv6 = use_ipv6
@@ -219,9 +220,5 @@ moca_sanic.after_server_stop = after_server_stop
 # Middleware
 for item in middlewares.values():
     moca_sanic.add_middleware(item[1], item[0])
-
-
-# Blueprint
-app.blueprint(Blueprint.group(*blueprints, url_prefix='/moca-file-log'))
 
 # -------------------------------------------------------------------------- App --
