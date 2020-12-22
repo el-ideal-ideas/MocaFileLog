@@ -37,8 +37,8 @@ middlewares: Dict[str, Tuple[str, Union[Callable, SanicPlugin]]] = {
 }
 
 
-# if core.SERVER_CONFIG['pyjs_secret'] is not None:
-#     from .moca_encryption import encryption_plugin
-#     middlewares['encryption_plugin'] = (plugin, encryption_plugin)
+if core.SERVER_CONFIG['pyjs_secret'] is not None:
+    from .moca_encryption import encryption_plugin
+    middlewares['encryption_plugin'] = (plugin, encryption_plugin)
 
 # -------------------------------------------------------------------------- Default Middlewares --
